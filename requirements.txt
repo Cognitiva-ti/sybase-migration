@@ -1,0 +1,380 @@
+# ===========================================================================
+# requirements.txt - Dependencias del Agente de Migración SybaseIQ
+# ===========================================================================
+
+# LLM Framework
+langchain==0.1.13
+langchain-anthropic==0.1.15
+langchain-core==0.1.35
+
+# Anthropic API
+anthropic==0.25.1
+
+# Base de Datos
+pyodbc==4.0.35
+
+# Validación de datos
+pydantic==2.5.0
+
+# Configuración
+pyyaml==6.0.1
+
+# Utilidades
+python-dotenv==1.0.0
+
+# Opcional: para mejor rendimiento
+aiohttp==3.9.1  # Para async requests
+tenacity==8.2.3  # Para reintentos automáticos
+
+
+# ===========================================================================
+# GUÍA DE INSTALACIÓN
+# ===========================================================================
+
+"""
+PASO 1: Requisitos del Sistema
+==============================
+
+Sistema Operativo:
+- Windows 10+, Linux (Ubuntu 20.04+), o macOS 12+
+
+Python:
+- Python 3.9+ (recomendado 3.11+)
+
+Cliente ODBC para SybaseIQ:
+- Instala el SAP ASE Client (Adaptive Server Enterprise Client)
+- Descarga desde: https://www.sap.com/products/technology/ase/download.html
+
+Variables de Entorno:
+- ANTHROPIC_API_KEY: Tu API key de Anthropic
+- SYBASE_USER: Usuario de SybaseIQ (opcional)
+- SYBASE_PASSWORD: Contraseña de SybaseIQ (opcional)
+
+
+PASO 2: Clonar repositorio
+==========================
+
+git clone https://github.com/tuorganizacion/sybase-migration.git
+cd sybase-migration
+
+
+PASO 3: Crear ambiente virtual
+==============================
+
+# Linux/macOS
+python -m venv venv
+source venv/bin/activate
+
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+
+PASO 4: Instalar dependencias
+=============================
+
+pip install -r requirements.txt
+
+
+PASO 5: Configurar credenciales
+==============================
+
+# Opción A: Variables de entorno
+export ANTHROPIC_API_KEY="sk-ant-..."
+export SYBASE_USER="tu_usuario"
+export SYBASE_PASSWORD="tu_contraseña"
+
+# Opción B: Archivo .env (crear archivo .env en raíz)
+ANTHROPIC_API_KEY=sk-ant-...
+SYBASE_USER=tu_usuario
+SYBASE_PASSWORD=tu_contraseña
+
+# Cargar desde Python
+from dotenv import load_dotenv
+load_dotenv()
+
+
+PASO 6: Verificar instalación
+=============================
+
+python -c "
+from migration_agent_langchain import SybaseIQMigrationAgent
+from langchain_anthropic import ChatAnthropic
+print('✅ Instalación correcta')
+"
+
+
+PASO 7: Ejecutar migración
+==========================
+
+# Con archivo de configuración
+python config_y_ejemplos.py
+
+# O directamente
+python migration_agent_langchain.py
+
+
+================================================================================
+INSTALACIÓN ESPECÍFICA POR PLATAFORMA
+================================================================================
+
+LINUX (Ubuntu/Debian)
+=====================
+
+# Actualizar sistema
+sudo apt-get update
+sudo apt-get upgrade
+
+# Instalar Python y herramientas
+sudo apt-get install python3.11 python3.11-venv python3.11-dev
+sudo apt-get install build-essential libssl-dev libffi-dev
+
+# Instalar cliente ODBC para SybaseIQ
+# Descargar desde SAP y seguir instrucciones de instalación
+# O si usas Docker:
+docker pull sybase/ase:latest
+
+# Crear venv e instalar
+python3.11 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+
+WINDOWS
+=======
+
+# Instalar Python desde python.org (agregar a PATH)
+# O usar chocolatey: choco install python3
+
+# Verificar Python
+python --version
+
+# Crear venv
+python -m venv venv
+venv\Scripts\activate
+
+# Instalar Microsoft Visual C++ Build Tools
+# Descargar desde: https://visualstudio.microsoft.com/visual-cpp-build-tools/
+
+# Instalar cliente ODBC para SybaseIQ
+# Descargar desde SAP y ejecutar instalador
+
+# Instalar dependencias
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Agregar driver ODBC a Variables de Entorno (opcional)
+setx ODBCINI "C:\Windows\odbc.ini"
+
+
+macOS
+=====
+
+# Instalar Homebrew si no está
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Instalar Python
+brew install python@3.11
+
+# Crear venv
+/usr/local/opt/python@3.11/bin/python3 -m venv venv
+source venv/bin/activate
+
+# Instalar cliente ODBC
+brew install unixodbc
+
+# Instalar cliente SAP ASE
+# Descargar desde SAP y seguir instrucciones
+
+# Instalar dependencias
+pip install --upgrade pip
+pip install -r requirements.txt
+
+
+================================================================================
+VERIFICACIÓN DE CONECTIVIDAD
+================================================================================
+
+# Probar conexión a SybaseIQ
+python -c "
+import pyodbc
+from migration_agent_langchain import SybaseIQConfig
+
+config = SybaseIQConfig(
+    server='tu-servidor.com',
+    database='tu_db',
+    username='tu_usuario',
+    password='tu_contraseña'
+)
+
+try:
+    conn = pyodbc.connect(config.get_connection_string())
+    cursor = conn.cursor()
+    cursor.execute('SELECT COUNT(*) FROM sysobjects WHERE type=\"P\"')
+    count = cursor.fetchone()[0]
+    print(f'✅ Conectado a SybaseIQ: {count} procedures encontrados')
+    conn.close()
+except Exception as e:
+    print(f'❌ Error de conexión: {e}')
+"
+
+# Probar API de Anthropic
+python -c "
+from langchain_anthropic import ChatAnthropic
+import os
+
+try:
+    llm = ChatAnthropic(model='claude-opus-4-6')
+    response = llm.invoke('Responde con una palabra: OK')
+    print(f'✅ Conectado a Claude API: {response.content}')
+except Exception as e:
+    print(f'❌ Error con API de Anthropic: {e}')
+"
+
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS
+================================================================================
+
+ERROR: "No module named 'pyodbc'"
+SOLUCIÓN:
+  pip install pyodbc
+  # En Windows, podría necesitar C++ Build Tools
+  # En Linux: sudo apt-get install python3-dev unixodbc-dev
+  # En macOS: brew install unixodbc
+
+ERROR: "Unable to connect to SybaseIQ"
+SOLUCIÓN:
+  1. Verifica que el cliente ODBC está instalado
+  2. Prueba la conexión con isql:
+     isql -S tu-servidor -U usuario -P contraseña
+  3. Verifica el servidor y puerto
+  4. Comprueba permisos de usuario
+
+ERROR: "ANTHROPIC_API_KEY not found"
+SOLUCIÓN:
+  export ANTHROPIC_API_KEY="sk-ant-..."
+  # O crea archivo .env con la clave
+
+ERROR: "Certificate verify failed"
+SOLUCIÓN:
+  # En Windows, podría ser problema de certificados SSL
+  pip install certifi
+  # O desactiva verificación (NO RECOMENDADO en producción):
+  import ssl
+  ssl._create_default_https_context = ssl._create_unverified_context
+
+ERROR: "Connection timeout"
+SOLUCIÓN:
+  1. Aumenta timeout en config:
+     timeout=60  # aumentar de 30 a 60
+  2. Verifica conectividad de red:
+     ping tu-servidor.com
+  3. Comprueba firewall
+  4. Verifica puerto (por defecto 5000)
+
+
+================================================================================
+PRIMEROS PASOS
+================================================================================
+
+1. CREAR ARCHIVO DE CONFIGURACIÓN
+
+Copia config.yaml y edita con tus credenciales:
+
+cp config_y_ejemplos.py config_real.py
+# Edita valores en config_real.py
+
+2. EJECUTAR PRIMER ANÁLISIS
+
+python -c "
+from config_y_ejemplos import load_config
+from migration_agent_langchain import SybaseIQMigrationAgent
+
+config = load_config('config.yaml')
+agent = SybaseIQMigrationAgent(config)
+
+# Obtener lista de procedures
+procedures = agent.db.get_all_procedures()
+print(f'Procedures encontrados: {len(procedures)}')
+for name in list(procedures.keys())[:5]:
+    print(f'  - {name}')
+"
+
+3. EJECUTAR ANÁLISIS COMPLETO
+
+python -c "
+from config_y_ejemplos import example_direct
+result = example_direct()
+print(result)
+"
+
+4. REVISAR REPORTES
+
+cat migration_output/migration_report_*.json | jq .
+
+5. PROBAR EN DEV
+
+# Ejecutar migration_script_*.sql en base de datos de prueba
+# ANTES de ejecutar en PRODUCCIÓN
+
+
+================================================================================
+CONFIGURACIÓN AVANZADA
+================================================================================
+
+# Para logging más detallado
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Para reintentos automáticos con fallos de API
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10)
+)
+def run_with_retries():
+    agent = SybaseIQMigrationAgent(config)
+    return agent.run_migration_pipeline()
+
+# Para validar schema antes de migración
+from migration_agent_langchain import SybaseIQDatabase
+
+db = SybaseIQDatabase(config.sybase_config)
+procs = db.get_all_procedures()
+for name, code in procs.items():
+    if 'LEGACY_SOURCE' in code:
+        print(f'Procedure a migrar: {name}')
+
+
+================================================================================
+ACTUALIZACIONES Y MANTENIMIENTO
+================================================================================
+
+# Actualizar dependencias
+pip install --upgrade -r requirements.txt
+
+# Limpiar cache
+pip cache purge
+
+# Crear requirements actualizado
+pip freeze > requirements_current.txt
+
+# Verificar vulnerabilidades
+pip check
+safety check  # pip install safety
+
+
+================================================================================
+RECURSOS Y DOCUMENTACIÓN
+================================================================================
+
+- Anthropic Claude API: https://docs.claude.com
+- LangChain Documentation: https://python.langchain.com
+- SybaseIQ Documentation: https://help.sap.com
+- Python ODBC: https://github.com/mkleehammer/pyodbc
+- Pydantic: https://docs.pydantic.dev
+
+"""
